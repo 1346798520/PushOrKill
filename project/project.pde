@@ -1,36 +1,42 @@
 int ground = 520, ph = 30;
 Person p;
 Box box;
-int w=60;
-int x=600;
+int w = 60;
+final int initX = 600;
+final int initY = 490;
 boolean onBox = false;
+final float secondsDead = 2.;
+float lastDead = -3.;
+
 void setup() {
   size(1000,600);
   p = new Person(500,ground,0,0); 
-  box = new Box(x,490,w,w);
+  box = new Box(initX,initY,w,w);
   line(0,520,1000,520);
   frameRate(30);
 }
 
 void draw() {
     background(255);
-    //
     line(0,520,1000,520);
+    float origPersonX = p.xpos;
     if (keyPressed) {
         if (key == 'd') p.drive(5);
         else if (key == 's') p.jump(5);
         else if (key == 'a') p.drive(-5);
         
     }
-    print(p.xpos);
-    print(" ", x - 1 / 2. * w, x + 1 / 2. * w, "\n");
+    
     if (!onBox) {
         if (onBoxNow() && p.ypos <= ground - w) {
             ground -= 60;
             onBox = true;
-        } else {
-            if (onBoxNow()) {
-                
+        } else if (inBox()) {
+            print(" ", isRight(origPersonX), "\n");
+            if (isRight(origPersonX)) {
+                box.pushbox();
+            } else {
+                box.boxkill();
             }
         }
     } else {
@@ -41,18 +47,27 @@ void draw() {
             onBox = false;
         }
     }
-    box.rectbox();
     p.gravity();
     p.display();
+    box.rectbox();
 }
 
 boolean onBoxNow() {
-    //print((p.xpos + 10 <= x + 1 / 2. * w) && (p.xpos + 30 >= x - 1 / 2. * w), " \n");
-    return (p.xpos + 10 <= x + 1 / 2. * w) && (p.xpos + 30 >= x - 1 / 2. * w);
+    return (p.xpos + 10 <= box.x + 1 / 2. * w) && (p.xpos + 30 >= box.x - 1 / 2. * w);
+}
+
+boolean inBox() {
+    return (p.xpos <= box.x + 1 / 2. * w) && (p.xpos + 40 >= box.x - 1 / 2. * w);
+}
+
+boolean isRight(float xpos) {
+    print(xpos, " ", box.x + w / 2);
+    return xpos >= box.x + w / 2;
 }
 
 class Person {
     int d = 0;
+    int lives = 3;
     float xpos;
     float ypos;
     float xspeed;
@@ -123,24 +138,39 @@ class Box {
         fill(255);
         rectMode(CENTER);
         rect(x, y, w, h);
+        print(lastDead + secondsDead, " ", millis() / 1000., "\n");
+        if (lastDead + secondsDead > millis() / 1000.) {
+            showDeadMsg();
+        }
     }
     void pushbox() {
         if ((p.xpos <= x + w / 2) && (p.ypos == ground)) {
             x = p.xpos - w / 2;
             if (x <= w / 2) {
                 p.xpos = w;
+                x = w / 2;
             }
         }
     }
-//    void boxkill() {
-//        if ((xpos + 30 == x - 1 / 2 * w) && (ypos == ground)) {
-//            xpos = 500;
-//            textSize(26);
-//            text("You die!", 200, 300);
-//            life = life - 1;
-//        }
+    void boxkill() {
+        if (p.ypos == ground) {
+            p.xpos = 500;
+            p.lives--;
+            x = initX;
+            y = initY;
+            ground = 520;
+            p.xpos = 500;
+            p.ypos = ground;
+            lastDead = millis() / 1000.;
+        }
 //        if (xe + 20 == x - 1 / 2 * w) { 
 //            ye = ye - 1000;
 //        }
-//    }
+    }
+    void showDeadMsg() {
+        print("*");
+        fill(0);
+        textSize(26);
+        text("You die!", 200, 300);
+    }
 }
