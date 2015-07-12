@@ -1,23 +1,25 @@
-int MGround = 520, PGround = 520;
+final float secondsDead = 2.;                 // Duration of showing the "you're dead" message
+final int w = 60, h = 60;                     // Dimensions of the Box
+final int initBX = 600, initBY = 520 - h / 2; // Initial location of the Box
+
 Person p;
-Box box,box2;
+Box box, box2;
 Monster mst;
-int w = 60, h = 60;
-final int initBX = 600;
-final int initBY = 520 - h / 2;
-boolean onBox = false, MonBox = false;
-final float secondsDead = 2.;
-float lastDead = -3.;
-boolean win = false;
+
+int MGround = 520, PGround = 520;       // Ground
+boolean onBox = false;                  // Person on the box?
+boolean MonBox = false;                 // Some Boolean states
+float lastDead = -3.;                   // The last time the Person is dead relative to starting the game, in seconds
+boolean win = false;                    // Won?
 
 void setup() {
-  size(1000,600);
-  p = new Person(100,PGround,0,0); 
-  box = new Box(initBX,initBY,w,h);
+	size(1000,600);
+	p = new Person(100,PGround,0,0); 
+	box = new Box(initBX,initBY,w,h);
 //  box2 = new Box(900, initBY, 0, h);
-  mst = new Monster(700,MGround,4,0);
-  line(0,520,1000,520);
-  frameRate(30);
+	mst = new Monster(700,MGround,4,0);
+	line(0,520,1000,520);
+	frameRate(30);
 }
 
 void draw() {
@@ -34,7 +36,9 @@ void draw() {
         mst.display();
         box.rectbox();
  //       box2.rectbox();
-        if(abs(p.xpos +20 -930)<=13.5 && abs(p.ypos - 25 -400) <= 11) {win = true;}
+        if (abs(p.xpos + 20 -930) <= 13.5 && abs(p.ypos - 25 - 400) <= 11) {
+        	win = true;
+        }
     }
     if(win) {
         fill(0,0,0);
@@ -52,6 +56,8 @@ boolean isRight(float xpos) {
 }
 
 class Person {
+    final float secondsInJump = 1;
+    final float heightOfJump = 6;
     int d = 0;
     int lives = 3;
     float xpos;
@@ -59,10 +65,8 @@ class Person {
     float xspeed;
     float yspeed;
     boolean jumping = false;
-    final float secondsInJump = 1;
     float secondsRemainingInJump;
     float yspeedup = 3;
-    final float heightOfJump = 6;
     Person(float tempXpos, float tempYpos, float tempXspeed, float tempYspeed) { 
         xpos = tempXpos;
         ypos = tempYpos;
@@ -130,15 +134,15 @@ class Person {
 }
 
 class Monster {
+    final float secondsInJump = 1;
+    final float heightOfJump = 6;
     float xpos; 
     float ypos;
     float xspeed;
     float yspeed;
     boolean jumping = false;
-    final float secondsInJump = 1;
     float secondsRemainingInJump;
     float yspeedup = 3;
-    final float heightOfJump = 6;
     Monster(float tempXpos, float tempYpos, float tempXspeed, float tempYspeed) {
         xpos = tempXpos;
         ypos = tempYpos;
