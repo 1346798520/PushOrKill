@@ -27,11 +27,10 @@ void draw() {
         background(255);
         apple();
         line(0,520,1000,520);
-        p.Pmove();
-        if(mst.xspeed != 0)mst.Mmove(); 
-        p.gravity();
+        p.move();
+        if(mst.xspeed != 0)mst.move(); 
         if(mst.xspeed != 0)mst.gravity();  
-        p.display();
+        p.draw();
         mst.drive();
         mst.display();
         box.rectbox();
@@ -73,27 +72,40 @@ class Person {
         xspeed = tempXspeed;
         yspeed = tempYspeed;
     }
-    void display() {
+    void draw() {
         noFill();
         stroke(0);
         ellipse(xpos + 20, ypos - 50, 20, 20);
         line(xpos + 20, ypos - 40, xpos + 20, ypos - 20);
         line(xpos, ypos - 30, xpos + 40, ypos - 30);
         line(xpos + 20, ypos - 20, xpos + 10, ypos);
-        line(xpos + 20, ypos - 20, xpos + 30, ypos);        
+        line(xpos + 20, ypos - 20, xpos + 30, ypos);
+        gravity();
+    }
+    void gravity() {
+        if (jumping) {
+            if(secondsRemainingInJump == secondsInJump) mst.jumping = true;
+            boolean goingUp = (secondsInJump / 2) < secondsRemainingInJump;
+            ypos -= heightOfJump / (secondsInJump / 2) * (goingUp ? 1 : -1);
+            secondsRemainingInJump -= (1 / 30.);
+            if (secondsRemainingInJump == 0 || ypos >= PGround) {
+                jumping = false;
+                secondsRemainingInJump = secondsInJump;
+            }
+        }
     }
     void drive(float xOffset) {
         xpos += xOffset;
     }
-    void jump(float yOffset) {
+    void jump() {
         if (jumping) return;
         jumping = true;
         secondsRemainingInJump = secondsInJump;
     }
-    void Pmove() {
+    void move() {
         if (keyPressed) {
             if (key == 'd') drive(5);
-            else if (key == 'w') jump(5);
+            else if (key == 'w') jump();
             else if (key == 'a') drive(-5);    
         }
         if(p.xpos + 40 >= mst.xpos - 17 && p.xpos < mst.xpos + 17 && (int)p.ypos == (int)mst.ypos && mst.xspeed != 0) {p.ypos = PGround;box.boxkill();}
@@ -119,18 +131,6 @@ class Person {
             }
         }
     }
-    void gravity() {
-        if (jumping) {
-            if(secondsRemainingInJump == secondsInJump) mst.jumping = true;
-            boolean goingUp = (secondsInJump / 2) < secondsRemainingInJump;
-            ypos -= heightOfJump / (secondsInJump / 2) * (goingUp ? 1 : -1);
-            secondsRemainingInJump -= (1 / 30.);
-            if (secondsRemainingInJump == 0 || ypos >= PGround) {
-                jumping = false;
-                secondsRemainingInJump = secondsInJump;
-            }
-        }
-    }
 }
 
 class Monster {
@@ -151,6 +151,7 @@ class Monster {
     }
     void display() {
         //print(ypos,"\n");
+        stroke(0);
         ellipse(xpos, ypos - 20, 40, 40);
         line(xpos - 10, ypos - 30, xpos + 10, ypos - 20);
         line(xpos - 10, ypos - 20, xpos + 10, ypos - 30);
@@ -165,7 +166,7 @@ class Monster {
         if(xpos >= 980) xspeed = -xspeed;
     }
     
-    void Mmove() {
+    void move() {
         if (!MonBox) {
             if (inBox(mst.xpos - 20, mst.xpos + 20) && mst.ypos <= MGround - h) {
                 MGround -= h;
@@ -250,7 +251,7 @@ class Box {
     void showDeadMsg() {
         fill(0);
         textSize(26);
-        text("You die!\nLife", 200, 300);//bu zhi dao zen me da yin p.lives
+        text("You died!\nLife", 200, 300); // dk how to print p.lives
     }
 }
 
