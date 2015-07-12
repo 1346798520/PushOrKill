@@ -13,13 +13,13 @@ float lastDead = -3.;                   // The last time the Person is dead rela
 boolean win = false;                    // Won?
 
 void setup() {
-	size(1000,600);
-	p = new Person(100,PGround,0,0); 
-	box = new Box(initBX,initBY,w,h);
+    size(1000,600);
+    p = new Person(100,PGround,0,0); 
+    box = new Box(initBX,initBY,w,h);
 //  box2 = new Box(900, initBY, 0, h);
-	mst = new Monster(700,MGround,4,0);
-	line(0,520,1000,520);
-	frameRate(30);
+    mst = new Monster(700,MGround,4,0);
+    line(0,520,1000,520);
+    frameRate(30);
 }
 
 void draw() {
@@ -27,16 +27,16 @@ void draw() {
         background(255);
         apple();
         line(0,520,1000,520);
-        p.move();
         if(mst.xspeed != 0)mst.move(); 
         if(mst.xspeed != 0)mst.gravity();  
-        p.draw();
         mst.drive();
         mst.display();
+        p.move();
+        p.draw();
         box.rectbox();
  //       box2.rectbox();
         if (abs(p.xpos + 20 -930) <= 13.5 && abs(p.ypos - 25 - 400) <= 11) {
-        	win = true;
+            win = true;
         }
     }
     if(win) {
@@ -189,7 +189,7 @@ class Monster {
         }
     }
     void gravity() {
-         if (jumping) {
+        if (jumping) {
             boolean goingUp = (secondsInJump / 2) < secondsRemainingInJump;
             ypos -= heightOfJump / (secondsInJump / 2) * (goingUp ? 1 : -1);
             secondsRemainingInJump -= (1 / 30.);
@@ -233,20 +233,17 @@ class Box {
             }
     }
     void boxkill() {
-        if (p.ypos == PGround) {
-            p.xpos = 500;
-            p.lives--;
-            x = initBX;
-            y = initBY;
-            PGround = 520;
-            MGround = 520;
-            p.xpos = 500;
-            p.ypos = PGround;
-            mst.xpos = 700;
-            mst.ypos = 520;
-            mst.xspeed = 4;
-            lastDead = millis() / 1000.;
-        }
+        x = initBX;
+        y = initBY;
+        PGround = 520;
+        MGround = 520;
+        p.lives--;
+        p.xpos = 100;
+        p.ypos = PGround;
+        mst.xpos = 700;
+        mst.ypos = 520;
+        mst.xspeed = 4;
+        lastDead = millis() / 1000.;
     }
     void showDeadMsg() {
         fill(0);
