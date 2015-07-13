@@ -31,7 +31,7 @@ void draw() {
         if(mst.xspeed != 0)mst.gravity();  
         mst.drive();
         mst.display();
-        p.move();
+        p.handleSignal();
         p.draw();
         box.rectbox();
  //       box2.rectbox();
@@ -72,25 +72,74 @@ class Person {
         xspeed = tempXspeed;
         yspeed = tempYspeed;
     }
+    float getLeftArmX() {
+        return xpos;
+    }
+    float getRightArmX() {
+        return xpos + 40;
+    }
+    float getLeftLegX() {
+        return xpos + 10;
+    }
+    float getRightLegX() {
+        return xpos + 30;
+    }
+    float getTopY() {
+        return ypos - 60;
+    }
+    float getBottomY() {
+        return ypos;
+    }
+    void handleSignal() {
+        if (keyPressed) {
+            if (key == 'd') drive(5);
+            else if (key == 'w') jump();
+            else if (key == 'a') drive(-5);    
+        }
+        if(xpos + 40 >= mst.xpos - 17 && xpos < mst.xpos + 17 && (int)ypos == (int)mst.ypos && mst.xspeed != 0) {
+            ypos = PGround;
+            box.boxkill();
+        }
+        if(xpos <= mst.xpos + 17 && xpos > mst.xpos - 17 && (int)ypos == (int)mst.ypos && mst.xspeed != 0) {
+            ypos = PGround;
+            box.boxkill();
+        }
+        if (!onBox) {
+            if (inBox(getLeftLegX(), getRightLegX()) && ypos <= box.getTopY()) {
+                PGround -= h;
+                onBox = true;
+            } 
+            else if (inBox(getLeftArmX(), getRightArmX()) && getBottomY() > box.getTopY()) {
+                 if (isRight(p.xpos + 10))
+                     box.pushbox();
+                 else
+                     box.boxkill();
+            }
+        } 
+        else if (!inBox(getLeftLegX(), getRightLegX())) {
+            secondsRemainingInJump = secondsInJump / 2.;
+            jumping = true;
+            PGround += h;
+            onBox = false;
+        }
+    }
     void draw() {
         noFill();
         stroke(0);
-        ellipse(xpos + 20, ypos - 50, 20, 20);
-        line(xpos + 20, ypos - 40, xpos + 20, ypos - 20);
-        line(xpos, ypos - 30, xpos + 40, ypos - 30);
-        line(xpos + 20, ypos - 20, xpos + 10, ypos);
-        line(xpos + 20, ypos - 20, xpos + 30, ypos);
+        ellipse(xpos + 20, ypos - 50, 20, 20);            // head
+        line(xpos + 20, ypos - 40, xpos + 20, ypos - 20); // body
+        line(xpos, ypos - 30, xpos + 40, ypos - 30);      // arms
+        line(xpos + 20, ypos - 20, xpos + 10, ypos);      // left leg
+        line(xpos + 20, ypos - 20, xpos + 30, ypos);      // right leg
         gravity();
     }
     void gravity() {
         if (jumping) {
-            if(secondsRemainingInJump == secondsInJump) mst.jumping = true;
             boolean goingUp = (secondsInJump / 2) < secondsRemainingInJump;
             ypos -= heightOfJump / (secondsInJump / 2) * (goingUp ? 1 : -1);
             secondsRemainingInJump -= (1 / 30.);
             if (secondsRemainingInJump == 0 || ypos >= PGround) {
                 jumping = false;
-                secondsRemainingInJump = secondsInJump;
             }
         }
     }
@@ -100,36 +149,9 @@ class Person {
     void jump() {
         if (jumping) return;
         jumping = true;
+        groundBeforeJump = ypos;
         secondsRemainingInJump = secondsInJump;
-    }
-    void move() {
-        if (keyPressed) {
-            if (key == 'd') drive(5);
-            else if (key == 'w') jump();
-            else if (key == 'a') drive(-5);    
-        }
-        if(p.xpos + 40 >= mst.xpos - 17 && p.xpos < mst.xpos + 17 && (int)p.ypos == (int)mst.ypos && mst.xspeed != 0) {p.ypos = PGround;box.boxkill();}
-        if(p.xpos <= mst.xpos + 17 && p.xpos > mst.xpos - 17 && (int)p.ypos == (int)mst.ypos && mst.xspeed != 0) {p.ypos = PGround;box.boxkill();}
-        if (!onBox) {
-            if (inBox(p.xpos + 10, p.xpos + 30) && p.ypos <= PGround - h) {
-                PGround -= h;
-                onBox = true;
-            } 
-            else if (inBox(p.xpos, p.xpos + 40)) {
-                 if (isRight(p.xpos + 10) && ypos >= PGround - h)
-                     box.pushbox();
-                 else
-                     box.boxkill();
-            }
-        } 
-        else {
-            if (!inBox(p.xpos + 10, p.xpos + 30)) {
-                secondsRemainingInJump = secondsInJump / 2.;
-                jumping = true;
-                PGround += h;
-                onBox = false;
-            }
-        }
+        mst.jump();
     }
 }
 
@@ -198,7 +220,12 @@ class Monster {
                 secondsRemainingInJump = secondsInJump;
             }
         }
-    }  
+    }
+    void jump() {
+        if (jumping) return;
+        jumping = true;
+        secondsRemainingInJump = secondsInJump;
+    }
 }
 
 class Box {
@@ -212,6 +239,18 @@ class Box {
         y = centery;
         w = width;
         h = height;
+    }
+    float getLeftX() {
+        return x - w / 2;
+    }
+    float getRightX() {
+        return x + w / 2;
+    }
+    float getTopY() {
+        return y - h / 2;
+    }
+    float getBottomY() {
+        return y + h / 2;
     }
     void rectbox() {
         stroke(0);
